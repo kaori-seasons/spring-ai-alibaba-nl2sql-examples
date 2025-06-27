@@ -4,6 +4,9 @@ import com.example.autoreport.dto.CreateReportTemplateRequest;
 import com.example.autoreport.entity.ReportTemplate;
 import com.example.autoreport.service.AutoReportService;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 @Component
 public class ReportUsageExample {
 

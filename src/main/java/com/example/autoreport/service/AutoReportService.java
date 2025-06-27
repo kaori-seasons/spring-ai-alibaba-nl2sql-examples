@@ -1,9 +1,11 @@
 package com.example.autoreport.service;
 
-import com.alibaba.cloud.ai.service.base.BaseNl2SqlService;
+import com.alibaba.cloud.ai.service.Nl2SqlService;
 import com.example.autoreport.dto.CreateReportTemplateRequest;
 import com.example.autoreport.entity.*;
 import com.example.autoreport.exception.ReportException;
+import com.example.autoreport.model.ChartConfig;
+import com.example.autoreport.model.ReportData;
 import com.example.autoreport.repository.ReportExecutionRepository;
 import com.example.autoreport.repository.ReportTemplateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +25,7 @@ public class AutoReportService {
 
     private static final Logger log = LoggerFactory.getLogger(AutoReportService.class);
 
-    private final BaseNl2SqlService nl2SqlService;
+    private final Nl2SqlService nl2SqlService;
     private final ReportTemplateRepository templateRepository;
     private final ReportExecutionRepository executionRepository;
     private final ReportVisualizationService visualizationService;
@@ -32,7 +34,7 @@ public class AutoReportService {
     private final ReportDataService reportDataService;
     private final ObjectMapper objectMapper;
 
-    public AutoReportService(BaseNl2SqlService nl2SqlService,
+    public AutoReportService(Nl2SqlService nl2SqlService,
                              ReportTemplateRepository templateRepository,
                              ReportExecutionRepository executionRepository,
                              ReportVisualizationService visualizationService,
