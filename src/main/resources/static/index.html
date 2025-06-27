@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动化报表系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div class="container mt-4">
+    <h1>自动化报表系统</h1>
+
+    <!-- 创建报表模板 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>创建报表模板</h3>
+        </div>
+        <div class="card-body">
+            <form id="createTemplateForm">
+                <div class="mb-3">
+                    <label for="templateName" class="form-label">报表名称</label>
+                    <input type="text" class="form-control" id="templateName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="templateDescription" class="form-label">描述</label>
+                    <textarea class="form-control" id="templateDescription" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="naturalQuery" class="form-label">自然语言查询</label>
+                    <textarea class="form-control" id="naturalQuery" rows="3" required
+                              placeholder="例如：查询昨天的销售总额和订单数量"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="cronExpression" class="form-label">定时表达式</label>
+                    <input type="text" class="form-control" id="cronExpression"
+                           placeholder="例如：0 0 9 * * ? (每天上午9点)">
+                </div>
+                <div class="mb-3">
+                    <label for="outputFormat" class="form-label">输出格式</label>
+                    <select class="form-control" id="outputFormat">
+                        <option value="JSON">JSON</option>
+                        <option value="EXCEL">Excel</option>
+                        <option value="HTML">HTML</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">创建模板</button>
+                <button type="button" class="btn btn-secondary" onclick="testQuery()">测试查询</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 报表模板列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h3>报表模板列表</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>描述</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="templateList">
+                <!-- 动态加载 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 创建报表模板
+    document.getElementById('createTemplateForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+            name: document.getElementById('templateName').value,
+            description: document.getElementById('templateDescription').value,
+            naturalQuery: document.getElementById('naturalQuery').value,
+            cronExpression: document.getElementById('cronExpression').value,
+            outputFormat: document.getElementById('outputFormat').value
+        };
+
+        try {
+            const response = await axios.post('/api/reports/templates', formData);
+            if (response.data.success) {
+                alert('报表模板创建成功！');
+                loadTemplates();
+                document.getElementById('createTemplateForm').reset();
+            } else {
+                alert('创建失败：' + response.data.message);
+            }
+        } catch (error) {
+            alert('创建失败：' + error.message);
+        }
+    });
+
+    // 测试自然语言查询
+    async function testQuery() {
+        const query = document.getElementById('naturalQuery').value;
+        if (!query) {
+            alert('请输入自然语言查询');
+            return;
+        }
+
+        try {
+            const response = await axios.post('/api/reports/test-query', { query });
+            if (response.data.data.success) {
+                alert('生成的SQL：\n' + response.data.data.generatedSql);
+            } else {
+                alert('查询测试失败：' + response.data.data.errorMessage);
+            }
+        } catch (error) {
+            alert('测试失败：' + error.message);
+        }
+    }
+
+    // 加载报表模板列表
+    async function loadTemplates() {
+        try {
+            const response = await axios.get('/api/reports/templates');
+            const templates = response.data.data.content;
+
+            const tbody = document.getElementById('templateList');
+            tbody.innerHTML = '';
+
+            templates.forEach(template => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${template.id}</td>
+                        <td>${template.name}</td>
+                        <td>${template.description || '-'}</td>
+                        <td>${template.status}</td>
+                        <td>${new Date(template.createdAt).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="executeReport(${template.id})">执行</button>
+                            <button class="btn btn-sm btn-info" onclick="viewExecutions(${template.id})">历史</button>
+                        </td>
+                    `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('加载模板列表失败：', error);
+        }
+    }
+
+    // 执行报表
+    async function executeReport(templateId) {
+        try {
+            const response = await axios.post(`/api/reports/templates/${templateId}/execute`);
+            if (response.data.success) {
+                alert('报表执行已启动！');
+            } else {
+                alert('执行失败：' + response.data.message);
+            }
+        } catch (error) {
+            alert('执行失败：' + error.message);
+        }
+    }
+
+    // 查看执行历史
+    function viewExecutions(templateId) {
+        window.open(`/executions.html?templateId=${templateId}`, '_blank');
+    }
+
+    // 页面加载时获取模板列表
+    window.onload = function() {
+        loadTemplates();
+    };
+</script>
+</body>
+</html>
