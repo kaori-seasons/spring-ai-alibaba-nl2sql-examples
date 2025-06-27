@@ -1,5 +1,9 @@
 package com.example.autoreport.example;
 
+import com.example.autoreport.dto.CreateReportTemplateRequest;
+import com.example.autoreport.entity.ReportTemplate;
+import com.example.autoreport.service.AutoReportService;
+
 @Component
 public class ReportUsageExample {
 
