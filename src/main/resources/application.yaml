@@ -1,0 +1,109 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: auto-report-system
+
+  # NL2SQL 基础配置
+  ai:
+    openai:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      api-key: ${DASHSCOPE_API_KEY}
+      chat:
+        options:
+          model: qwen-max
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
+    vectorstore:
+      analytic:
+        collectName: report_chatbi
+        regionId: cn-hangzhou
+        dbInstanceId: ${ANALYTICDB_INSTANCE_ID}
+        managerAccount: ${ANALYTICDB_ACCOUNT}
+        managerAccountPassword: ${ANALYTICDB_PASSWORD}
+        namespace: ${ANALYTICDB_NAMESPACE}
+        namespacePassword: ${ANALYTICDB_NAMESPACE_PASSWORD}
+        defaultTopK: 10
+        defaultSimilarityThreshold: 0.01
+        accessKeyId: ${ALIYUN_ACCESS_KEY_ID}
+        accessKeySecret: ${ALIYUN_ACCESS_KEY_SECRET}
+
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/auto_report?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # 邮件配置
+  mail:
+    host: ${EMAIL_SMTP_HOST:smtp.gmail.com}
+    port: ${EMAIL_SMTP_PORT:587}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# 业务数据库配置（NL2SQL查询的目标数据库）
+chatbi:
+  dbconfig:
+    url: jdbc:mysql://localhost:3306/business_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${BUSINESS_DB_USERNAME:root}
+    password: ${BUSINESS_DB_PASSWORD:password}
+    connectiontype: jdbc
+    dialecttype: mysql
+
+# 自动报表系统配置
+auto-report:
+  # 文件存储配置
+  file:
+    storage-path: ${REPORT_STORAGE_PATH:/data/reports}
+    max-file-size: 100MB
+    allowed-formats: [EXCEL, PDF, HTML, JSON]
+
+  # 通知配置
+  notification:
+    email:
+      enabled: ${EMAIL_ENABLED:true}
+      smtp-host: ${EMAIL_SMTP_HOST:smtp.gmail.com}
+      smtp-port: ${EMAIL_SMTP_PORT:587}
+      username: ${EMAIL_USERNAME}
+      password: ${EMAIL_PASSWORD}
+    dingtalk:
+      enabled: ${DINGTALK_ENABLED:false}
+      webhook-url: ${DINGTALK_WEBHOOK}
+    wechat:
+      enabled: ${WECHAT_ENABLED:false}
+      corp-id: ${WECHAT_CORP_ID}
+      corp-secret: ${WECHAT_CORP_SECRET}
+
+  # 执行配置
+  execution:
+    max-concurrent-reports: 5
+    timeout-minutes: 30
+    retry-count: 2
+
+# 日志配置
+logging:
+  level:
+    com.example.autoreport: DEBUG
+    com.alibaba.cloud.ai: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/auto-report.log
