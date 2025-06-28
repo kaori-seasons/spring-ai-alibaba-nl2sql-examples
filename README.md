@@ -46,6 +46,10 @@ graph TD
 
 这个设计充分利用了Spring AI Alibaba的Graph工作流引擎和NL2SQL能力，为企业提供了一个智能化的报表自动化解决方案，同时支持完整的流程图可视化功能。  
 
+## 业务数据库建表
+
+请见 [spring-ai-alibaba-nl2sql-example](https://github.com/springaialibaba/spring-ai-alibaba-examples/tree/main/spring-ai-alibaba-nl2sql-example/chat/sql)
+
 ## 数据库建表语句
 
 ### 1. 报表模板表 (report_templates)
